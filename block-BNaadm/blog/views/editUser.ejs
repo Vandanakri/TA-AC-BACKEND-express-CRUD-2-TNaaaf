@@ -1,0 +1,10 @@
+<%- include('partial/header') %>
+  <form action="/blog/<%= blog.id %>" method="POST">
+    <input type="text" name="title" placeholder="Enter the title" value=<%=blog.title %> >
+    <input type="text" name="description" placeholder="Enter the Description" value=<%=blog.description %>>
+    <input type="text" name="tags" placeholder="Enter the Tags" value=<%=blog.tags %>>
+    <input type="text" name="author" placeholder="Enter the Author" value=<%=blog.author %>>
+
+    <input type="submit" value="Update User">
+  </form>
+  <%- include('partial/footer') %>
