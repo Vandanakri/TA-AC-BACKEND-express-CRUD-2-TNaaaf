@@ -1,87 +1,84 @@
 var express = require('express');
 var router = express.Router();
-var Article = require('../models/Article')
 
-/* GET users listing. */
-router.get('/', function(req, res, next) {
-    res.send("welcome to blog")
+var Article = require('../models/Article');
+
+// list articles
+router.get('/', (req, res, next) => {
+    Article.find({}, (err, articles) => {
+        if(err) return next(err);
+        res.render('articles', { articles })
+    })
 });
 
-router.get('/new', (req,res,next)=>{
-    res.render('formPage');
-})
+// create article form
+router.get('/new', (req, res) => {
+    res.render('addArticle');
+});
 
-router.post( '/new', (req,res,next)=>{
-    console.log(req.body);
-    Article.create( req.body, (err,articles)=>{
-        if (err) return next(err);
-        res.redirect('/blogs/allArticles');
-    } )
-} )
+// fetch single article
+router.get('/:id', (req, res, next) => {
+    var id = req.params.id;
+    Article.findById(id, (err, article) => {
+        if(err) return next(err);
+        res.render('articleDetails', { article })
+    })
+});
 
-router.get( '/allArticles', (req,res,next)=>{
-    Article.find({},(err,articles)=>{
-        if (err) return next(err);
-        res.render('allArticles',{articles:articles});
+// create article
+router.post('/', (req, res, next) => {
+    req.body.tags = req.body.tags.trim().split(" ");
+    Article.create(req.body, (err, createdArticle) => {
+        if(err) return next(err);
+        res.redirect('/articles')
+    })
+});
+
+// edit article form
+router.get('/:id/edit', (req, res, next) => {
+    var id = req.params.id;
+    Article.findById(id, (err, article) => {
+        article.tags = article.tags.join(" ")
+        if (err) return next (err);
+        res.render('editArticleForm', {article})
     });
-} );
-
-
-router.get( '/:id/detail', (req,res,next)=>{
-    var id = req.params.id;
-    Article.findById( id, (err,articles)=>{
-        if (err) return next(err);
-        res.render('detailedArticle', {articles:articles});
-    })
-} )
-
-router.get('/:id/edit',(req,res,next)=>{
-    var id = req.params.id;
-    Article.findById( id, (err,articles)=>{
-        if (err) return next(err);
-        res.render('editFormPage',{articles:articles});
-    })
-})
-
-router.post('/:id/post', (req,res,next)=>{
-    var id = req.params.id;
-    Article.findByIdAndUpdate( id, req.body, (err,articles)=>{
-        if (err) return next(err);
-        // res.redirect('/blogs/'+id+'/detail')
-        res.redirect('/blogs/allArticles')
-        // res.render('detailedArticle',{articles:articles})
-    } )
 });
 
-router.get( '/:id/delete', (req,res,next)=>{
+// update article 
+router.post('/:id', (req, res, next) => {
     var id = req.params.id;
-    Article.findByIdAndDelete( id, (err,articles)=>{
-        if (err) return next(err);
-        res.redirect('/blogs/allArticles');
+    req.body.tags = req.body.tags.split(" ");
+    Article.findByIdAndUpdate(id, req.body, (err, updatedData) => {
+        if (err) return next (err);
+        res.redirect('/articles/' + id)
+    });
+});
+
+// delete article
+router.get('/:id/delete', (req, res, next) => {
+    var id = req.params.id;
+    Article.findByIdAndDelete(id, (err, article) => {
+        if (err) return next (err);
+        res.redirect('/articles')
+    });
+});
+
+// increament likes
+router.get('/:id/likes', (req, res, next) => {
+    var id = req.params.id;
+    Article.findByIdAndUpdate(id, {$inc: {likes: 1}}, (err, article) => {
+        if (err) return next (err);
+        res.redirect('/articles/' + id)
     })
-} );
-
-// like logic
-router.get( '/:id/like', (req,res,next)=>{
-    var id = req.params.id;
-    var like = req.body.likes
-    var counter = like === 'likes' ? 1 : +1;
-    Article.findByIdAndUpdate( id, {$inc: {likes: counter}}, (err,articles)=>{
-        if (err) return next(err);
-        res.redirect('/blogs/'+id+'/detail');
-    }  )
 })
 
-//dislike logic
-router.get( '/:id/dislike', (req,res,next)=>{
+// decrement likes
+router.get('/:id/dislike', (req, res, next) => {
     var id = req.params.id;
-    var dislike = req.body.likes
-    var counter = dislike === 'likes' ? 1 : -1 ;
-    Article.findByIdAndUpdate( id, {$inc: {likes: counter}}, (err,articles)=>{
-        if (err) return next(err);
-        res.redirect('/blogs/'+id+'/detail');
-    }  )
+    Article.findByIdAndUpdate(id, {$inc: {likes: -1}}, (err, article) => {
+        if (err) return next (err);
+        res.redirect('/articles/' + id)
+    })
 })
 
-
-module.exports = router;
+module.exports = router;    

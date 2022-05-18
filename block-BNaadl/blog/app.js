@@ -5,7 +5,16 @@ var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 
 var indexRouter = require('./routes/index');
-var articlesRouter = require('./routes/articles')
+var articlesRouter = require('./routes/articles');
+const { default: mongoose } = require('mongoose');
+
+//connecting to database
+
+mongoose.connect("mongodb://localhost/blog",
+{ useNewUrlParser:true,useunifiedTopology:true},
+(err) => {
+  console.log(err ? err : "connected true");
+})
 
 var app = express();
 
