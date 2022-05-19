@@ -2,21 +2,23 @@ var createError = require('http-errors');
 var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
-var mongoose = require('mongoose');
 var logger = require('morgan');
+var mongoose = require('mongoose');
 
 var indexRouter = require('./routes/index');
-var blogRouter = require('./routes/blog');
-var commentRouter = require('./routes/comment');
+var articleRouter = require('./routes/article');
+var commentsRouter = require('./routes/comment');
+
+//connecting to database
+
+mongoose.connect("mongodb://localhost/blog",
+  { useNewUrlParser: true, useunifiedTopology: true },
+  (err) => {
+    console.log(err ? err : "connected true");
+  })
+
 
 var app = express();
-
-// connected to database
-
-mongoose.connect("mongodb://localhost/blog", (err) =>{ 
-  console.log( err ? err : "connected to database" );
-});
-
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -29,16 +31,16 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', indexRouter);
-app.use('/blog', blogRouter);
-app.use('/comment', commentRouter);
+app.use('/article', articleRouter);
+app.use('/comment', commentsRouter);
 
 // catch 404 and forward to error handler
-app.use(function(req, res, next) {
+app.use(function (req, res, next) {
   next(createError(404));
 });
 
 // error handler
-app.use(function(err, req, res, next) {
+app.use(function (err, req, res, next) {
   // set locals, only providing error in development
   res.locals.message = err.message;
   res.locals.error = req.app.get('env') === 'development' ? err : {};
@@ -49,3 +51,4 @@ app.use(function(err, req, res, next) {
 });
 
 module.exports = app;
+

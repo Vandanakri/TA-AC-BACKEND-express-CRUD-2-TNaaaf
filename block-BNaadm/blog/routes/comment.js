@@ -1,34 +1,33 @@
 var express = require('express');
 var router = express.Router();
+var Comment = require('../models/Comment');
 
-var Blog = require('../models/blog');
-var Comment = require('../models/comment');
+// Update a coment
 
-// Comments
-
-router.get('/:id/edit', function(req, res, next) {
+router.get('/:id/edit', (req, res) => {
   var id = req.params.id;
   Comment.findById(id, (err, comment) => {
     if (err) return next(err);
-    res.render('editComment', { comment });
+    res.render('updateComment', { comment });
   });
 });
 
-router.post('/:id', function(req, res, next) {
+router.post('/:id', (req, res, next) => {
   var id = req.params.id;
-  var data = req.body;
-  Comment.findByIdAndUpdate(id, data, (err, comment) => {
+  Comment.findByIdAndUpdate(id, req.body, (err, updatedComment) => {
     if (err) return next(err);
-    res.redirect('/blogs/' + comment.blogId);
+    res.redirect('/article/' + updatedComment.articleId);
   });
 });
 
-router.get('/:id/delete', function(req,res,next) {
-  var id = req.params.id;
-  Comment.findByIdAndRemove(id, (err,comments)=>{
-      if (err) return next(err);
-      res.redirect('/blogs/' + comments.blogId)
-  })
+// Delete Button
+
+router.get('/:id/delete', (req, res, next) => {
+  var commentId = req.params.id;
+  Comment.findByIdAndDelete(commentId, (err, comment) => {
+    if (err) return next(err);
+    res.redirect('/article/' + comment.articleId);
+  });
 });
 
 module.exports = router;
